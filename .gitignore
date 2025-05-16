@@ -1,0 +1,19 @@
+.env
+
+venv/
+.venv/
+.idea/
+.mypy_cache/
+__pycache__/
+
+database/users_db.json
+
+# Mac OS
+.DS_Store
+
+
+*.pyc
+*.pyo
+*.pyd
+
+*.rdb
