@@ -25,7 +25,7 @@ async def main():
     config: Config = load_config('.env')
 
     redis = Redis(
-        host='localhost',  # адрес сервера Redis
+        host='redis',  # адрес сервера Redis
         port=6379,  # порт (по умолчанию Redis использует 6379)
         # db=1  # номер базы данных (по умолчанию 0)
     )
