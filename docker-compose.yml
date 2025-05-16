@@ -19,7 +19,7 @@ services:
     expose:
       - "6379"
     restart: unless-stopped
-    network:
+    networks:
       - internal
 
 networks:
