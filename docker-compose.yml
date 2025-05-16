@@ -1,0 +1,28 @@
+services:
+  tg_bot:
+    build: .
+    image: tg_bot_fill_form:v1.0
+    container_name: tg_bot
+    restart: unless-stopped
+    volumes:
+      - ./database:/app/database
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - internal
+
+  redis:
+    image: redis:alpine
+    container_name: redis_for_bot
+    expose:
+      - "6379"
+    restart: unless-stopped
+    network:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
