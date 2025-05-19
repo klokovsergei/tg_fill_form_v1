@@ -4,7 +4,7 @@ from datetime import datetime
 from aiogram import Router, F
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.state import default_state
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 
 from database.database import users_db
@@ -26,7 +26,8 @@ async def process_cancel_command(message: Message):
 
 @router.message(Command(commands='cancel'), ~StateFilter(default_state))
 async def process_cancel_command_state(message: Message, state: FSMContext):
-    await message.answer(text=LEXICON['cancel_state'])
+    await message.answer(text=LEXICON['cancel_state'],
+                                  reply_markup=ReplyKeyboardRemove())
     await state.clear()
 
 
@@ -118,6 +119,8 @@ async def warning_not_email(message: Message):
 @router.message(F.contact, StateFilter(FSMUserForm.fill_phone))
 async def process_phone_send(message: Message, state: FSMContext):
     await state.update_data(phone=message.contact.phone_number)
+    await message.answer(text=LEXICON['thanks_number'],
+                         reply_markup=ReplyKeyboardRemove())
     await message.answer(
         text=LEXICON['is_notification'],
         reply_markup=create_join_keyboard(

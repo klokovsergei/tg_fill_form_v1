@@ -6,7 +6,7 @@ from aiogram import Router, Bot, F
 from aiogram.filters import CommandStart, Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
 from keyboards.join_kb import create_join_keyboard
 from lexicon.lexicon import LEXICON

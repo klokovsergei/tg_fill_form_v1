@@ -8,7 +8,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import RedisStorage
 
 from config_data.config import Config, load_config
-from handlers import command, user_form
+from handlers import command, user_form, other_handlers
 from keyboards.main_menu import set_main_menu
 
 logger = logging.getLogger(__name__)
@@ -25,9 +25,9 @@ async def main():
     config: Config = load_config('.env')
 
     redis = Redis(
-        host='redis',  # адрес сервера Redis
-        port=6379,  # порт (по умолчанию Redis использует 6379)
-        # db=1  # номер базы данных (по умолчанию 0)
+        host=config.redis.host,  # адрес сервера Redis
+        port=config.redis.port,  # порт (по умолчанию Redis использует 6379)
+        db=config.redis.db  # номер базы данных (по умолчанию 0)
     )
     storage = RedisStorage(redis=redis)
 
@@ -43,6 +43,7 @@ async def main():
 
     dp.include_router(user_form.router)
     dp.include_router(command.router)
+    dp.include_router(other_handlers.router)
 
     logger.info('Обнуляем очередь апдейтов')
     await bot.delete_webhook(drop_pending_updates=True)
