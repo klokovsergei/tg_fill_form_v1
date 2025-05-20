@@ -8,6 +8,7 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 
 from database.database import users_db
+from database.media_db import MEDIA
 from filters.custom_filters import IsDateFormat, IsEmailOrSkip
 from keyboards.join_kb import create_join_keyboard
 from keyboards.phone_request import create_phone_request
@@ -104,8 +105,10 @@ async def warning_not_birthday(message: Message):
 @router.message(StateFilter(FSMUserForm.fill_email), IsEmailOrSkip())
 async def process_email_send(message: Message, state: FSMContext):
     await state.update_data(email=message.text.strip())
-    await message.answer(
-        text=LEXICON['fill_phone'],
+
+    await message.answer_photo(
+        photo=MEDIA['share_phone_instruction'],
+        caption=LEXICON['fill_phone'],
         reply_markup=create_phone_request()
     )
     await state.set_state(FSMUserForm.fill_phone)
@@ -118,6 +121,10 @@ async def warning_not_email(message: Message):
 
 @router.message(F.contact, StateFilter(FSMUserForm.fill_phone))
 async def process_phone_send(message: Message, state: FSMContext):
+    if message.contact.user_id != message.from_user.id:
+        await message.answer(text=LEXICON['not_your_number'])
+        return
+
     await state.update_data(phone=message.contact.phone_number)
     await message.answer(text=LEXICON['thanks_number'],
                          reply_markup=ReplyKeyboardRemove())
