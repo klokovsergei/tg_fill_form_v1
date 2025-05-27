@@ -6,8 +6,9 @@ venv/
 .mypy_cache/
 __pycache__/
 
-
-database/*.json
+database/users_db.json
+database/users_db_v2.json
+database/media.json
 
 # Mac OS
 .DS_Store
