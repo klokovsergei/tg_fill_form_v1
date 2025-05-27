@@ -1,5 +1,4 @@
 import asyncio
-from copy import deepcopy
 from datetime import datetime
 
 from aiogram import Router, Bot, F
@@ -10,9 +9,8 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
 from keyboards.join_kb import create_join_keyboard
 from lexicon.lexicon import LEXICON
-from database.database import users_db, user_info, users_db_v2, UserData
-from services.storage import save_users_db
-from services.storage_user_data import save_users_db_v2
+from database.database import users_db, UserData
+from services.storage_user_data import save_users_db
 
 router = Router()
 
@@ -25,16 +23,12 @@ async def process_start_command(message: Message, support_chats):
     #     await message.answer(LEXICON['/help'])
     #     return
 
-    if user_id not in users_db or user_id not in users_db_v2:
-        users_db[user_id] = deepcopy(user_info)
-        users_db_v2[user_id] = UserData()
+    if user_id not in users_db:
+        users_db[user_id] = UserData()
 
     bot_name = await message.bot.get_me()
-    users_db[user_id]['username'] = message.from_user.username
-    users_db[user_id]['time_start'] = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
-    users_db[user_id]['is_alive'] = True
 
-    user: UserData = users_db_v2[user_id]
+    user: UserData = users_db[user_id]
     user.user_join.username = message.from_user.username
     user.user_join.time_start = datetime.now()
     user.user_join.is_alive = True
@@ -44,13 +38,12 @@ async def process_start_command(message: Message, support_chats):
             chat_id=chat_id,
             text=LEXICON['new_user'].format(
                 bot_name=bot_name.username,
-                username=users_db[message.from_user.id]['username'],
+                username=user.user_join.username,
                 user_id=user_id,
-                time_join=users_db[user_id]['time_start'],
+                time_join=user.user_join.time_start,
             )
         )
     await save_users_db(users_db)
-    await save_users_db_v2(users_db_v2)
     await message.answer(
         LEXICON[message.text],
         reply_markup=create_join_keyboard(
@@ -66,7 +59,8 @@ async def process_del_kb(callback: CallbackQuery, state: FSMContext):
 
 @router.message(Command(commands='fill'))
 async def process_fill_command(message: Message):
-    if not users_db[message.from_user.id]['is_join']:
+    user: UserData = users_db[message.from_user.id]
+    if not user.is_join:
         await message.answer(LEXICON['not_join'])
         return
 

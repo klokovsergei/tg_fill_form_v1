@@ -21,6 +21,7 @@ class UserJoin:
 
 @dataclass
 class GeneralInfo:
+    is_fill: bool = False
     children: bool = False
     children_info: str = ''
     childhood_health: str = ''
@@ -35,6 +36,7 @@ class GeneralInfo:
 
 @dataclass
 class MedicalHistory:
+    is_fill: bool = False
     input_diagnoses: str = ''
 
 @dataclass

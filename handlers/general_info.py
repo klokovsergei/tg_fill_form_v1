@@ -12,7 +12,6 @@ from database.media_db import MEDIA
 from filters.custom_filters import IsDateFormat, IsEmailOrSkip, CityNameFilter
 from keyboards.join_kb import create_join_keyboard
 from keyboards.phone_request import create_phone_request
-from services.storage import save_users_db
 from states.user_form import FSMUserForm
 
 from lexicon.lexicon import LEXICON
@@ -24,17 +23,17 @@ router = Router()
 async def process_start_fill_general_info(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup(reply_markup=None)
 
-    user_id = message.from_user.id
-    if users_db[user_id]['is_join']:
-        await message.answer(
-            text=LEXICON['already_joined'],
-            reply_markup=create_join_keyboard(
-                'firstname', 'lastname', 'phone', 'birthday', 'email', 'cancel_button'
-            ))
-        await state.set_state(FSMUserForm.edit_user_form)
-    else:
-        await message.answer(text=LEXICON['fill_firstname'])
-        await state.set_state(FSMUserForm.fill_firstname)
+    # user_id = message.from_user.id
+    # if users_db[user_id]['is_join']:
+    #     await message.answer(
+    #         text=LEXICON['already_joined'],
+    #         reply_markup=create_join_keyboard(
+    #             'firstname', 'lastname', 'phone', 'birthday', 'email', 'cancel_button'
+    #         ))
+    #     await state.set_state(FSMUserForm.edit_user_form)
+    # else:
+    #     await message.answer(text=LEXICON['fill_firstname'])
+    #     await state.set_state(FSMUserForm.fill_firstname)
 
 
 # @router.callback_query(F.data == 'join', StateFilter(default_state))

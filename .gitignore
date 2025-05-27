@@ -7,7 +7,6 @@ venv/
 __pycache__/
 
 database/users_db.json
-database/users_db_v2.json
 database/media.json
 
 # Mac OS

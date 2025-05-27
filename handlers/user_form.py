@@ -12,7 +12,8 @@ from database.media_db import MEDIA
 from filters.custom_filters import IsDateFormat, IsEmailOrSkip, CityNameFilter
 from keyboards.join_kb import create_join_keyboard
 from keyboards.phone_request import create_phone_request
-from services.storage import save_users_db
+from models.user_data import UserData
+from services.storage_user_data import save_users_db
 from states.user_form import FSMUserForm
 
 from lexicon.lexicon import LEXICON
@@ -34,8 +35,8 @@ async def process_cancel_command_state(message: Message, state: FSMContext):
 
 @router.message(Command(commands='join'), StateFilter(default_state))
 async def process_fillform_command(message: Message, state: FSMContext):
-    user_id = message.from_user.id
-    if users_db[user_id]['is_join']:
+    user: UserData = users_db[message.from_user.id]
+    if user.is_join:
         await message.answer(
             text=LEXICON['already_joined'],
             reply_markup=create_join_keyboard(
@@ -90,9 +91,9 @@ async def process_gender_send(callback: CallbackQuery, state: FSMContext):
 
 @router.message(StateFilter(FSMUserForm.fill_birthday), IsDateFormat())
 async def process_birthday_send(message: Message, state: FSMContext):
-    birthday = re.sub(r'[,\-/]', '.', message.text.strip())
+    day = re.sub(r'[,\-/]', '.', message.text.strip())
 
-    await state.update_data(birthday=birthday)
+    await state.update_data(birthday=day)
     await message.answer(text=LEXICON['fill_city'])
     await state.set_state(FSMUserForm.fill_city)
 
@@ -160,16 +161,18 @@ async def process_subscribe_notification(callback: CallbackQuery, support_chats,
     user_info = await state.get_data()
     await state.clear()
 
-    user_id = callback.from_user.id
+    user: UserData = users_db[callback.from_user.id]
     bot_name = await callback.bot.get_me()
-    users_db[user_id]['is_join'] = True
-    users_db[user_id]['time_join'] = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
-    users_db[callback.from_user.id].update(user_info)
 
-    birthday_str = users_db[user_id]['birthday']
-    birthday = datetime.strptime(birthday_str, '%d.%m.%Y').date()
+    user.is_join = True
+    user.user_join.time_join = datetime.now()
+    user.user_join.birthday = datetime.strptime(user_info.pop('birthday'), '%d.%m.%Y')
+
+    for field_name in user_info:
+        setattr(user.user_join, field_name, user_info[field_name])
 
     today = date.today()
+    birthday = user.user_join.birthday
     age = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day))
 
     for chat_id in support_chats:
@@ -177,17 +180,17 @@ async def process_subscribe_notification(callback: CallbackQuery, support_chats,
             chat_id=chat_id,
             text=LEXICON['new_join_up'].format(
                 bot_name=bot_name.username,
-                firstname=users_db[user_id]['firstname'],
-                lastname=users_db[user_id]['lastname'],
-                username=users_db[user_id]['username'],
-                gender=users_db[user_id]['gender'],
-                birthday=users_db[user_id]['birthday'],
+                firstname=user.user_join.firstname,
+                lastname=user.user_join.lastname,
+                username=user.user_join.username,
+                gender=user.user_join.gender,
+                birthday=user.user_join.birthday.strftime('%d.%m.%Y'),
                 age=age,
-                city=users_db[user_id]['city'],
-                email=users_db[user_id]['email'],
-                phone=users_db[user_id]['phone'],
-                time_start=users_db[user_id]['time_start'],
-                time_join=users_db[user_id]['time_join'],
+                city=user.user_join.city,
+                email=user.user_join.email,
+                phone=user.user_join.phone,
+                time_start=user.user_join.time_start.strftime('%d.%m.%Y %H:%M:%S'),
+                time_join=user.user_join.time_join.strftime('%d.%m.%Y %H:%M:%S'),
             )
         )
 
