@@ -26,3 +26,12 @@ class IsEmailOrSkip(BaseFilter):
             return True
         email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         return bool(re.match(email_pattern, text))
+
+
+class CityNameFilter(BaseFilter):
+    def __init__(self):
+        self.pattern = re.compile(r'^[A-Za-zА-Яа-яЁё\s\-.]+$' , re.UNICODE)
+
+    async def __call__(self, message: Message) -> bool:
+        city = message.text.strip()
+        return bool(self.pattern.fullmatch(city))

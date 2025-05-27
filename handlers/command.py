@@ -10,8 +10,9 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
 from keyboards.join_kb import create_join_keyboard
 from lexicon.lexicon import LEXICON
-from database.database import users_db, user_info
+from database.database import users_db, user_info, users_db_v2, UserData
 from services.storage import save_users_db
+from services.storage_user_data import save_users_db_v2
 
 router = Router()
 
@@ -24,13 +25,19 @@ async def process_start_command(message: Message, support_chats):
     #     await message.answer(LEXICON['/help'])
     #     return
 
-    if user_id not in users_db:
+    if user_id not in users_db or user_id not in users_db_v2:
         users_db[user_id] = deepcopy(user_info)
+        users_db_v2[user_id] = UserData()
 
     bot_name = await message.bot.get_me()
     users_db[user_id]['username'] = message.from_user.username
-    users_db[user_id]['time_start'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    users_db[user_id]['time_start'] = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
     users_db[user_id]['is_alive'] = True
+
+    user: UserData = users_db_v2[user_id]
+    user.user_join.username = message.from_user.username
+    user.user_join.time_start = datetime.now()
+    user.user_join.is_alive = True
 
     for chat_id in support_chats:
         await message.bot.send_message(
@@ -43,6 +50,7 @@ async def process_start_command(message: Message, support_chats):
             )
         )
     await save_users_db(users_db)
+    await save_users_db_v2(users_db_v2)
     await message.answer(
         LEXICON[message.text],
         reply_markup=create_join_keyboard(
@@ -54,6 +62,22 @@ async def process_start_command(message: Message, support_chats):
 async def process_del_kb(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup(reply_markup=None)
     await state.clear()
+
+
+@router.message(Command(commands='fill'))
+async def process_fill_command(message: Message):
+    if not users_db[message.from_user.id]['is_join']:
+        await message.answer(LEXICON['not_join'])
+        return
+
+    # проверку какие блоки уже заполнены
+    buttons = ['general_info', 'medical_history', 'lifestyle', 'sleep_schedule', 'habits', 'goals_docs']
+
+    await message.answer(
+        text=LEXICON[message.text],
+        reply_markup=create_join_keyboard(
+            *buttons
+        ))
 
 
 @router.message(Command(commands='stop'))

@@ -20,3 +20,5 @@ redis==6.0.0
 typing-inspection==0.4.0
 typing_extensions==4.13.2
 yarl==1.20.0
+
+dacite~=1.9.2

@@ -5,6 +5,7 @@ class FSMUserForm(StatesGroup):
     fill_lastname = State()
     fill_gender = State()
     fill_birthday = State()
+    fill_city = State()
     fill_email = State()
     fill_phone = State()
     fill_notifications = State()
