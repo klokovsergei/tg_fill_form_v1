@@ -10,6 +10,7 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from keyboards.join_kb import create_join_keyboard
 from lexicon.lexicon import LEXICON
 from database.database import users_db, UserData
+from services.buttons import get_buttons_auto
 from services.storage_user_data import save_users_db
 
 router = Router()
@@ -65,12 +66,19 @@ async def process_fill_command(message: Message):
         return
 
     # проверку какие блоки уже заполнены
-    buttons = ['general_info', 'medical_history', 'lifestyle', 'sleep_schedule', 'habits', 'goals_docs']
+    buttons = [
+        'general_info'
+        , 'medical_history'
+        # , 'lifestyle'
+        # , 'sleep_schedule'
+        # , 'habits'
+        # , 'goals_docs'
+    ]
 
     await message.answer(
         text=LEXICON[message.text],
         reply_markup=create_join_keyboard(
-            *buttons
+            *get_buttons_auto(user, buttons)
         ))
 
 

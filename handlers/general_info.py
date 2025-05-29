@@ -1,18 +1,14 @@
-import re
-from datetime import datetime, date
-
 from aiogram import Router, F
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import StateFilter
 from aiogram.fsm.state import default_state
-from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from database.database import users_db
-from database.media_db import MEDIA
-from filters.custom_filters import IsDateFormat, IsEmailOrSkip, CityNameFilter
 from keyboards.join_kb import create_join_keyboard
-from keyboards.phone_request import create_phone_request
-from states.user_form import FSMUserForm
+from models.user_data import UserData
+from services.storage_user_data import save_users_db
+from states.general_info import FSMGeneralInfo
 
 from lexicon.lexicon import LEXICON
 
@@ -23,168 +19,186 @@ router = Router()
 async def process_start_fill_general_info(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup(reply_markup=None)
 
-    # user_id = message.from_user.id
-    # if users_db[user_id]['is_join']:
-    #     await message.answer(
-    #         text=LEXICON['already_joined'],
-    #         reply_markup=create_join_keyboard(
-    #             'firstname', 'lastname', 'phone', 'birthday', 'email', 'cancel_button'
-    #         ))
-    #     await state.set_state(FSMUserForm.edit_user_form)
-    # else:
-    #     await message.answer(text=LEXICON['fill_firstname'])
-    #     await state.set_state(FSMUserForm.fill_firstname)
+    await callback.message.answer(
+        text=LEXICON['children'],
+        reply_markup=create_join_keyboard(
+            'yes_button', 'no_button', row_width=2
+        ))
+    await state.set_state(FSMGeneralInfo.children)
 
 
-# @router.callback_query(F.data == 'join', StateFilter(default_state))
-# async def process_fillform_callback(callback: CallbackQuery, state: FSMContext):
-#     await callback.message.edit_reply_markup(reply_markup=None)
-#
-#     await callback.message.answer(text=LEXICON['fill_firstname'])
-#     await state.set_state(FSMUserForm.fill_firstname)
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_firstname), F.text.isalpha())
-# async def process_name_send(message: Message, state: FSMContext):
-#     await state.update_data(firstname=message.text.strip())
-#     await message.answer(text=LEXICON['fill_lastname'])
-#     await state.set_state(FSMUserForm.fill_lastname)
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_lastname), F.text.isalpha())
-# async def process_lastname_send(message: Message, state: FSMContext):
-#     await state.update_data(lastname=message.text.strip())
-#     await message.answer(
-#         text=LEXICON['fill_gender'],
-#         reply_markup=create_join_keyboard(
-#             'male', 'female'
-#         ))
-#     await state.set_state(FSMUserForm.fill_gender)
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_firstname))
-# @router.message(StateFilter(FSMUserForm.fill_lastname))
-# async def warning_not_name(message: Message):
-#     await message.answer(text=LEXICON['not_name'])
-#
-#
-# @router.callback_query(StateFilter(FSMUserForm.fill_gender))
-# async def process_gender_send(callback: CallbackQuery, state: FSMContext):
-#     await callback.message.edit_reply_markup(reply_markup=None)
-#     await state.update_data(gender=callback.data)
-#
-#     await callback.message.answer(text=LEXICON['fill_birthday'])
-#     await state.set_state(FSMUserForm.fill_birthday)
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_birthday), IsDateFormat())
-# async def process_birthday_send(message: Message, state: FSMContext):
-#     birthday = re.sub(r'[,\-/]', '.', message.text.strip())
-#
-#     await state.update_data(birthday=birthday)
-#     await message.answer(text=LEXICON['fill_city'])
-#     await state.set_state(FSMUserForm.fill_city)
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_birthday))
-# async def warning_not_birthday(message: Message):
-#     await message.answer(text=LEXICON['not_date'])
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_city), CityNameFilter())
-# async def process_city_send(message: Message, state: FSMContext):
-#     await state.update_data(city=message.text.strip())
-#     await message.answer(text=LEXICON['fill_email'])
-#     await state.set_state(FSMUserForm.fill_email)
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_city))
-# async def warning_not_city(message: Message):
-#     await message.answer(text=LEXICON['not_city'])
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_email), IsEmailOrSkip())
-# async def process_email_send(message: Message, state: FSMContext):
-#     await state.update_data(email=message.text.strip())
-#
-#     await message.answer_photo(
-#         photo=MEDIA['share_phone_instruction'],
-#         caption=LEXICON['fill_phone'],
-#         reply_markup=create_phone_request()
-#     )
-#     await state.set_state(FSMUserForm.fill_phone)
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_email))
-# async def warning_not_email(message: Message):
-#     await message.answer(text=LEXICON['not_email'])
-#
-#
-# @router.message(F.contact, StateFilter(FSMUserForm.fill_phone))
-# async def process_phone_send(message: Message, state: FSMContext):
-#     if message.contact.user_id != message.from_user.id:
-#         await message.answer(text=LEXICON['not_your_number'])
-#         return
-#
-#     await state.update_data(phone=message.contact.phone_number)
-#     await message.answer(text=LEXICON['thanks_number'],
-#                          reply_markup=ReplyKeyboardRemove())
-#     await message.answer(
-#         text=LEXICON['is_notification'],
-#         reply_markup=create_join_keyboard(
-#             'yes_button', 'no_button',
-#             row_width=2
-#         ))
-#     await state.set_state(FSMUserForm.fill_notifications)
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_phone))
-# async def warning_not_phone(message: Message):
-#     await message.answer(text=LEXICON['not_phone'])
-#
-#
-# @router.callback_query(StateFilter(FSMUserForm.fill_notifications))
-# async def process_subscribe_notification(callback: CallbackQuery, support_chats, state: FSMContext):
-#     await state.update_data(notification=(callback.data == 'yes_button'))
-#     user_info = await state.get_data()
-#     await state.clear()
-#
-#     user_id = callback.from_user.id
-#     bot_name = await callback.bot.get_me()
-#     users_db[user_id]['is_join'] = True
-#     users_db[user_id]['time_join'] = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
-#     users_db[callback.from_user.id].update(user_info)
-#
-#     birthday_str = users_db[user_id]['birthday']
-#     birthday = datetime.strptime(birthday_str, '%d.%m.%Y').date()
-#
-#     today = date.today()
-#     age = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day))
-#
-#     for chat_id in support_chats:
-#         await callback.bot.send_message(
-#             chat_id=chat_id,
-#             text=LEXICON['new_join_up'].format(
-#                 bot_name=bot_name.username,
-#                 firstname=users_db[user_id]['firstname'],
-#                 lastname=users_db[user_id]['lastname'],
-#                 username=users_db[user_id]['username'],
-#                 gender=users_db[user_id]['gender'],
-#                 birthday=users_db[user_id]['birthday'],
-#                 age=age,
-#                 city=users_db[user_id]['city'],
-#                 email=users_db[user_id]['email'],
-#                 phone=users_db[user_id]['phone'],
-#                 time_start=users_db[user_id]['time_start'],
-#                 time_join=users_db[user_id]['time_join'],
-#             )
-#         )
-#
-#     await callback.message.edit_text(text=LEXICON['join_compliant'], reply_markup=None)
-#     await save_users_db(users_db)
-#
-#
-# @router.message(StateFilter(FSMUserForm.fill_notifications))
-# @router.message(StateFilter(FSMUserForm.fill_gender))
-# async def warning_not_notifications(message: Message):
-#     await message.answer(text=LEXICON['not_button'])
+@router.callback_query(StateFilter(FSMGeneralInfo.children))
+async def process_fill_children(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    await state.update_data(children=callback.data)
+    if callback.data == 'yes_button':
+        await callback.message.answer(text=LEXICON['children_info'])
+        await state.set_state(FSMGeneralInfo.children_info)
+        return
+    else:
+        await state.update_data(children_info='')
+        await callback.message.answer(text=LEXICON['childhood_health'])
+        await state.set_state(FSMGeneralInfo.childhood_health)
+
+
+@router.message(StateFilter(FSMGeneralInfo.children_info))
+async def process_fill_children_info(message: Message, state: FSMContext):
+    await state.update_data(children_info=message.text.strip())
+    await message.answer(text=LEXICON['childhood_health'])
+    await state.set_state(FSMGeneralInfo.childhood_health)
+
+
+@router.message(
+    StateFilter(FSMGeneralInfo.childhood_health),
+    F.text.len() > 5)
+async def process_fill_children_health(message: Message, state: FSMContext):
+    await state.update_data(childhood_health=message.text.strip())
+    await message.answer(
+        text=LEXICON['employment_type'],
+        reply_markup=create_join_keyboard(
+            'employment_sedentary', 'employment_active',
+            'employment_mixed', 'employment_none'
+        ))
+    await state.set_state(FSMGeneralInfo.employment_type)
+
+
+@router.callback_query(StateFilter(FSMGeneralInfo.employment_type))
+async def process_fill_employment_type(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    await state.update_data(employment_type=callback.data)
+    await callback.message.answer(
+        text=LEXICON['physical_activity'],
+        reply_markup=create_join_keyboard(
+            'button_low_activity', 'button_walk_5k',
+            'button_irregular_sport', 'button_regular_training'
+        ))
+
+    await state.set_state(FSMGeneralInfo.physical_activity)
+
+
+@router.callback_query(StateFilter(FSMGeneralInfo.physical_activity))
+async def process_fill_physical_activity(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    await state.update_data(physical_activity=callback.data)
+
+    if callback.data == 'button_regular_training':
+        await callback.message.answer(
+            text=LEXICON['physical_activity_comment'])
+        await state.set_state(FSMGeneralInfo.physical_activity_comment)
+        return
+
+    await state.update_data(physical_activity_comment='')
+    await callback.message.answer(
+        text=LEXICON['stress_level'])
+    await state.set_state(FSMGeneralInfo.stress_level)
+
+
+@router.message(
+    StateFilter(FSMGeneralInfo.physical_activity_comment),
+    F.text.len() > 5)
+async def process_fill_physical_activity_comment(message: Message, state: FSMContext):
+    await state.update_data(physical_activity_comment=message.text.strip())
+    await message.answer(
+        text=LEXICON['stress_level'],
+        reply_markup=create_join_keyboard(
+            *[f'button_{i}' for i in range(1, 11)], row_width=5
+        ))
+    await state.set_state(FSMGeneralInfo.stress_level)
+
+
+@router.callback_query(StateFilter(FSMGeneralInfo.stress_level))
+async def process_fill_stress_level(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    await state.update_data(stress_level=callback.data.removeprefix('button_'))
+    await callback.message.answer(
+        text=LEXICON['mood_swings'],
+        reply_markup=create_join_keyboard(
+            'never', 'rarely', 'often',
+            row_width=3
+        ))
+    await state.set_state(FSMGeneralInfo.mood_swings)
+
+
+@router.callback_query(StateFilter(FSMGeneralInfo.mood_swings))
+async def process_fill_mood_swings(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    await state.update_data(mood_swings=callback.data)
+    await callback.message.answer(
+        text=LEXICON['anxiety'],
+        reply_markup=create_join_keyboard(
+            'never', 'rarely', 'often',
+            row_width=3
+        ))
+    await state.set_state(FSMGeneralInfo.anxiety)
+
+
+@router.callback_query(StateFilter(FSMGeneralInfo.anxiety))
+async def process_fill_anxiety(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    await state.update_data(anxiety=callback.data)
+    await callback.message.answer(
+        text=LEXICON['apathy'],
+        reply_markup=create_join_keyboard(
+            'never', 'rarely', 'often',
+            row_width=3
+        ))
+    await state.set_state(FSMGeneralInfo.apathy)
+
+
+@router.callback_query(StateFilter(FSMGeneralInfo.apathy))
+async def process_fill_apathy(callback: CallbackQuery, support_chats, state: FSMContext):
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    await state.update_data(apathy=callback.data)
+    user_info = await state.get_data()
+    await state.clear()
+
+    user: UserData = users_db[callback.from_user.id]
+    bot_name = await callback.bot.get_me()
+
+    user.general_info.is_fill = True
+
+    for field_name in user_info:
+        setattr(user.general_info, field_name, user_info[field_name])
+
+    for chat_id in support_chats:
+        await callback.bot.send_message(
+            chat_id=chat_id,
+            text=LEXICON['filled_general_info'].format(
+                bot_name=bot_name.username,
+                children=LEXICON[user.general_info.children],
+                children_info_block=user.general_info.children_info,
+                childhood_health=user.general_info.childhood_health,
+                employment_type=LEXICON[user.general_info.employment_type],
+                stress_level=user.general_info.stress_level,
+                mood_swings=LEXICON[user.general_info.mood_swings],
+                anxiety=LEXICON[user.general_info.anxiety],
+                apathy=LEXICON[user.general_info.apathy],
+                physical_activity=LEXICON[user.general_info.physical_activity],
+                physical_activity_comment=user.general_info.physical_activity_comment,
+            )
+        )
+    await callback.message.answer(text=LEXICON['general_info_thanks'])
+    await save_users_db(users_db)
+
+
+@router.message(StateFilter(FSMGeneralInfo.childhood_health))
+async def process_too_short_message(message: Message, state: FSMContext):
+    await message.answer(text=LEXICON['not_so_short'])
+
+
+@router.message(StateFilter(FSMGeneralInfo.children))
+@router.message(StateFilter(FSMGeneralInfo.employment_type))
+@router.message(StateFilter(FSMGeneralInfo.stress_level))
+@router.message(StateFilter(FSMGeneralInfo.mood_swings))
+@router.message(StateFilter(FSMGeneralInfo.anxiety))
+@router.message(StateFilter(FSMGeneralInfo.apathy))
+@router.message(StateFilter(FSMGeneralInfo.physical_activity))
+async def warning_not_children(message: Message):
+    await message.answer(text=LEXICON['not_button'])
