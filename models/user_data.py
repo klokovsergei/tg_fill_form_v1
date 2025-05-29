@@ -22,11 +22,11 @@ class UserJoin:
 @dataclass
 class GeneralInfo:
     is_fill: bool = False
-    children: bool = False
+    children: str = ''
     children_info: str = ''
     childhood_health: str = ''
     employment_type: str = ''
-    stress_level: int = 0
+    stress_level: str = ''
     mood_swings: str = ''
     anxiety: str = ''
     apathy: str = ''
@@ -37,7 +37,27 @@ class GeneralInfo:
 @dataclass
 class MedicalHistory:
     is_fill: bool = False
-    input_diagnoses: str = ''
+    diagnosis: str = ''
+    surgeries: str = ''
+    surgeries_details: str = ''
+    past_medications: str = ''
+    current_medications: str = ''
+    allergies: str = ''
+    allergies_details: str = ''
+    probiotics_tolerance: str = ''
+    probiotics_tolerance_details: str = ''
+    stool_problems: str = ''
+    heartburn_frequency: str = ''
+    heartburn_details: str = ''
+    current_complaints: str = ''
+    current_complaints_details: str = ''
+    serious_issues: str = ''
+    serious_issues_details: str = ''
+    menstrual_issues: str = ''
+    menstrual_issues_details: str = ''
+    family_diseases: str = ''
+    family_alive: str = ''
+    family_death_details: str = ''
 
 @dataclass
 class UserData:

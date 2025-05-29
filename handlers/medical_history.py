@@ -11,48 +11,117 @@ from services.storage_user_data import save_users_db
 from states.general_info import FSMGeneralInfo
 
 from lexicon.lexicon import LEXICON
+from states.medical_history import FSMMedicalHistory
 
 router = Router()
 
 
-@router.callback_query(F.data == 'general_info', StateFilter(default_state))
-async def process_start_fill_general_info(callback: CallbackQuery, state: FSMContext):
+@router.callback_query(F.data == 'medical_history', StateFilter(default_state))
+async def process_start_fill_medical_history(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup(reply_markup=None)
 
-    await callback.message.answer(
-        text=LEXICON['children'],
+    await callback.message.answer(text=LEXICON['diagnosis'])
+    await state.set_state(FSMMedicalHistory.diagnosis)
+
+
+@router.message(
+    StateFilter(FSMMedicalHistory.diagnosis),
+    F.text.len() > 5)
+async def process_fill_diagnosis(message: Message, state: FSMContext):
+    await state.update_data(diagnosis=message.text.strip())
+    await message.answer(
+        text=LEXICON['surgeries'],
         reply_markup=create_join_keyboard(
             'yes_button', 'no_button', row_width=2
         ))
-    await state.set_state(FSMGeneralInfo.children)
+    await state.set_state(FSMMedicalHistory.surgeries)
 
 
-@router.callback_query(F.data == 'yes_general_info')
-async def process_start_fill_general_info(callback: CallbackQuery):
-    await callback.answer(text=LEXICON['general_info_yes'])
-
-
-@router.callback_query(StateFilter(FSMGeneralInfo.children))
-async def process_fill_children(callback: CallbackQuery, state: FSMContext):
+@router.callback_query(StateFilter(FSMMedicalHistory.surgeries))
+async def process_fill_surgeries(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup(reply_markup=None)
 
-    await state.update_data(children=callback.data)
+    await state.update_data(surgeries=callback.data)
     if callback.data == 'yes_button':
-        await callback.message.answer(text=LEXICON['children_info'])
-        await state.set_state(FSMGeneralInfo.children_info)
+        await callback.message.answer(text=LEXICON['surgeries_details'])
+        await state.set_state(FSMMedicalHistory.surgeries_details)
         return
     else:
-        await state.update_data(children_info='')
-        await callback.message.answer(text=LEXICON['childhood_health'])
-        await state.set_state(FSMGeneralInfo.childhood_health)
+        await state.update_data(surgeries_details='')
+        await callback.message.answer(text=LEXICON['past_medications'])
+        await state.set_state(FSMMedicalHistory.past_medications)
 
 
-@router.message(StateFilter(FSMGeneralInfo.children_info))
-async def process_fill_children_info(message: Message, state: FSMContext):
-    await state.update_data(children_info=message.text.strip())
-    await message.answer(text=LEXICON['childhood_health'])
-    await state.set_state(FSMGeneralInfo.childhood_health)
+@router.message(
+    StateFilter(FSMMedicalHistory.surgeries_details),
+    F.text.len() > 5)
+async def process_fill_surgeries_details(message: Message, state: FSMContext):
+    await state.update_data(surgeries_details=message.text.strip())
+    await message.answer(text=LEXICON['past_medications'])
+    await state.set_state(FSMMedicalHistory.past_medications)
 
+
+@router.message(
+    StateFilter(FSMMedicalHistory.past_medications),
+    F.text.len() > 2)
+async def process_fill_past_medications(message: Message, state: FSMContext):
+    await state.update_data(past_medications=message.text.strip())
+    await message.answer(text=LEXICON['current_medications'])
+    await state.set_state(FSMMedicalHistory.current_medications)
+
+
+@router.message(
+    StateFilter(FSMMedicalHistory.current_medications),
+    F.text.len() > 2)
+async def process_fill_current_medications(message: Message, state: FSMContext):
+    await state.update_data(current_medications=message.text.strip())
+    await message.answer(
+        text=LEXICON['allergies'],
+        reply_markup=create_join_keyboard(
+            'yes_button', 'no_button', row_width=2
+        ))
+    await state.set_state(FSMMedicalHistory.allergies)
+
+
+@router.callback_query(StateFilter(FSMMedicalHistory.allergies))
+async def process_fill_allergies(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    await state.update_data(allergies=callback.data)
+    if callback.data == 'yes_button':
+        await callback.message.answer(text=LEXICON['allergies_details'])
+        await state.set_state(FSMMedicalHistory.allergies_details)
+    else:
+        await state.update_data(allergies_details='')
+        await callback.message.answer(
+            text=LEXICON['probiotics_tolerance'],
+            reply_markup=create_join_keyboard(
+                'button_good_tolerance',
+                'button_neutral_tolerance',
+                'button_bad_tolerance',
+                row_width=3
+            ))
+        await state.set_state(FSMMedicalHistory.probiotics_tolerance)
+
+
+@router.message(
+    StateFilter(FSMMedicalHistory.allergies_details),
+    F.text.len() > 5)
+async def process_fill_allergies_details(message: Message, state: FSMContext):
+    await state.update_data(allergies_details=message.text.strip())
+    await message.answer(
+        text=LEXICON['probiotics_tolerance'],
+        reply_markup=create_join_keyboard(
+            'button_good_tolerance',
+            'button_neutral_tolerance',
+            'button_bad_tolerance',
+            row_width=3
+        ))
+    await state.set_state(FSMMedicalHistory.probiotics_tolerance)
+
+
+#####
+#####
 
 @router.message(
     StateFilter(FSMGeneralInfo.childhood_health),
@@ -193,18 +262,17 @@ async def process_fill_apathy(callback: CallbackQuery, support_chats, state: FSM
     await save_users_db(users_db)
 
 
-@router.message(StateFilter(FSMGeneralInfo.childhood_health))
-@router.message(StateFilter(FSMGeneralInfo.physical_activity_comment))
+@router.message(StateFilter(FSMMedicalHistory.diagnosis))
+@router.message(StateFilter(FSMMedicalHistory.surgeries_details))
+@router.message(StateFilter(FSMMedicalHistory.past_medications))
+@router.message(StateFilter(FSMMedicalHistory.current_medications))
+@router.message(StateFilter(FSMMedicalHistory.allergies_details))
 async def process_too_short_message(message: Message):
     await message.answer(text=LEXICON['not_so_short'])
 
 
-@router.message(StateFilter(FSMGeneralInfo.children))
-@router.message(StateFilter(FSMGeneralInfo.employment_type))
-@router.message(StateFilter(FSMGeneralInfo.stress_level))
-@router.message(StateFilter(FSMGeneralInfo.mood_swings))
-@router.message(StateFilter(FSMGeneralInfo.anxiety))
-@router.message(StateFilter(FSMGeneralInfo.apathy))
-@router.message(StateFilter(FSMGeneralInfo.physical_activity))
+@router.message(StateFilter(FSMMedicalHistory.surgeries))
+@router.message(StateFilter(FSMMedicalHistory.allergies))
+@router.message(StateFilter(FSMMedicalHistory.probiotics_tolerance))
 async def warning_not_children(message: Message):
     await message.answer(text=LEXICON['not_button'])
