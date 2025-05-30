@@ -21,6 +21,5 @@ class FSMMedicalHistory(StatesGroup):
     menstrual_issues = State()  # Нарушения менструального цикла (только для женщин)
     menstrual_issues_details = State()  # уточнения если "Да"
     family_diseases = State()  # Заболевания родственников
-    family_alive = State()  # 22. Все ли родственники живы?
-    family_death_details = State()  # уточнения если "Нет"
+    family_alive = State()  # Все ли родственники живы?
 

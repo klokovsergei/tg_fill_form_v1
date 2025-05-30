@@ -57,7 +57,6 @@ class MedicalHistory:
     menstrual_issues_details: str = ''
     family_diseases: str = ''
     family_alive: str = ''
-    family_death_details: str = ''
 
 @dataclass
 class UserData:

@@ -73,6 +73,7 @@ async def process_fill_command(message: Message):
         # , 'sleep_schedule'
         # , 'habits'
         # , 'goals_docs'
+        , 'cancel_button'
     ]
 
     await message.answer(
