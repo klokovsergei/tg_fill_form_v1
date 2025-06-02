@@ -59,9 +59,19 @@ class MedicalHistory:
     family_alive: str = ''
 
 @dataclass
+class SleepSchedule:
+    is_fill: bool = False
+    sleep_time: str = ''
+    fall_asleep_speed: str = ''
+    night_awakenings: str = ''
+    morning_feeling: str = ''
+    daytime_sleepiness: str = ''
+
+@dataclass
 class UserData:
     user_join: UserJoin = field(default_factory=UserJoin)
     general_info: GeneralInfo = field(default_factory=GeneralInfo)
     medical_history: MedicalHistory = field(default_factory=MedicalHistory)
+    sleep_schedule: SleepSchedule = field(default_factory=SleepSchedule)
     is_join: bool = False
     is_form_filled: bool = False

@@ -8,7 +8,6 @@ from database.database import users_db
 from keyboards.join_kb import create_join_keyboard
 from models.user_data import UserData
 from services.storage_user_data import save_users_db
-from states.general_info import FSMGeneralInfo
 
 from lexicon.lexicon import LEXICON
 from states.medical_history import FSMMedicalHistory
@@ -23,6 +22,10 @@ async def process_start_fill_medical_history(callback: CallbackQuery, state: FSM
     await callback.message.answer(text=LEXICON['diagnosis'])
     await state.set_state(FSMMedicalHistory.diagnosis)
 
+
+@router.callback_query(F.data == 'yes_medical_history')
+async def process_start_fill_general_info(callback: CallbackQuery):
+    await callback.answer(text=LEXICON['medical_history_yes'])
 
 @router.message(
     StateFilter(FSMMedicalHistory.diagnosis),

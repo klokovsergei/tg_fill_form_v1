@@ -70,7 +70,7 @@ async def process_fill_command(message: Message):
         'general_info'
         , 'medical_history'
         # , 'lifestyle'
-        # , 'sleep_schedule'
+        , 'sleep_schedule'
         # , 'habits'
         # , 'goals_docs'
         , 'cancel_button'
