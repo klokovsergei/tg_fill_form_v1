@@ -68,10 +68,20 @@ class SleepSchedule:
     daytime_sleepiness: str = ''
 
 @dataclass
+class Habits:
+    is_fill: bool = False
+    smoking: str = ''
+    smoking_details: str = ''
+    alcohol: str = ''
+    alcohol_details: str = ''
+    other_habits: str = ''
+
+@dataclass
 class UserData:
     user_join: UserJoin = field(default_factory=UserJoin)
     general_info: GeneralInfo = field(default_factory=GeneralInfo)
     medical_history: MedicalHistory = field(default_factory=MedicalHistory)
     sleep_schedule: SleepSchedule = field(default_factory=SleepSchedule)
+    habits: Habits = field(default_factory=Habits)
     is_join: bool = False
     is_form_filled: bool = False

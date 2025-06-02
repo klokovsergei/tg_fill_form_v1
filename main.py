@@ -9,7 +9,7 @@ from aiogram.fsm.storage.redis import RedisStorage
 
 from config_data.config import Config, load_config
 from handlers import (command, user_form, other_handlers, general_info, medical_history,
-                      sleep_schedule)
+                      sleep_schedule, habits)
 from keyboards.main_menu import set_main_menu
 
 logger = logging.getLogger(__name__)
@@ -46,6 +46,7 @@ async def main():
     dp.include_router(general_info.router)
     dp.include_router(medical_history.router)
     dp.include_router(sleep_schedule.router)
+    dp.include_router(habits.router)
     dp.include_router(command.router)
     dp.include_router(other_handlers.router)
 

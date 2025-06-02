@@ -71,7 +71,7 @@ async def process_fill_command(message: Message):
         , 'medical_history'
         # , 'lifestyle'
         , 'sleep_schedule'
-        # , 'habits'
+        , 'habits'
         # , 'goals_docs'
         , 'cancel_button'
     ]
