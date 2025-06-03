@@ -3,7 +3,6 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.callback_answer import CallbackAnswer
 
 from database.database import users_db
 from keyboards.join_kb import create_join_keyboard
@@ -12,8 +11,6 @@ from services.storage_user_data import save_users_db
 
 from lexicon.lexicon import LEXICON
 from states.habits import FSMHabits
-from states.medical_history import FSMMedicalHistory
-from states.sleep_schedule import FSMSleepSchedule
 
 router = Router()
 

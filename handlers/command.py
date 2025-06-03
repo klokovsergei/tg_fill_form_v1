@@ -69,7 +69,7 @@ async def process_fill_command(message: Message):
     buttons = [
         'general_info'
         , 'medical_history'
-        # , 'lifestyle'
+        , 'lifestyle'
         , 'sleep_schedule'
         , 'habits'
         # , 'goals_docs'

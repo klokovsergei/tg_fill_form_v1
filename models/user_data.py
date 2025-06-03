@@ -77,11 +77,32 @@ class Habits:
     other_habits: str = ''
 
 @dataclass
+class Lifestyle:
+    is_fill: bool = False
+    meals_per_day: str = ''
+    breakfast_time: str = ''
+    heaviest_meal: str = ''
+    cooking_attitude: str = ''
+    snacks_frequency: str = ''
+    frequent_foods: str = ''
+    daily_drinks: str = ''
+    food_intolerance: str = ''
+    food_intolerance_details: str = ''
+    eating_features: str = ''
+    eating_features_details: str = ''
+    past_diets: str = ''
+    past_diets_details: str = ''
+    supplements: str = ''
+    supplements_details: str = ''
+    readiness_to_change: str = ''
+
+@dataclass
 class UserData:
     user_join: UserJoin = field(default_factory=UserJoin)
     general_info: GeneralInfo = field(default_factory=GeneralInfo)
     medical_history: MedicalHistory = field(default_factory=MedicalHistory)
     sleep_schedule: SleepSchedule = field(default_factory=SleepSchedule)
     habits: Habits = field(default_factory=Habits)
+    lifestyle: Lifestyle = field(default_factory=Lifestyle)
     is_join: bool = False
     is_form_filled: bool = False
