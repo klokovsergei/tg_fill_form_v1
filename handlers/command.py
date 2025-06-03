@@ -17,15 +17,18 @@ router = Router()
 
 
 @router.message(CommandStart(), StateFilter(default_state))
-async def process_start_command(message: Message, support_chats):
+async def process_start_command(message: Message, support_chats, state: FSMContext):
     user_id = message.from_user.id
 
     # if user_id in users_db and users_db[user_id]['is_alive']:
     #     await message.answer(LEXICON['/help'])
     #     return
 
-    if user_id not in users_db:
-        users_db[user_id] = UserData()
+    # if user_id not in users_db:
+    #     users_db[user_id] = UserData()
+
+    users_db[user_id] = UserData()
+    await state.clear()
 
     bot_name = await message.bot.get_me()
 
